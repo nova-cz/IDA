@@ -126,15 +126,40 @@ def h_LastMove(board_matrix, goal_positions):
         return 1
     return 0
 
+def h_DistanciaInversion(board_matrix, goal_positions):
+    """Distancia de Inversión 1D (Inversion Distance)"""
+    inv_count = 0
+    # Obviamos el 0 (espacio vacío)
+    tiles = [val for val in board_matrix if val != 0]
+    
+    # Creamos un mapa de donde debería ir cada valor según el goal_positions
+    # para saber su "orden relativo" correcto
+    size = int(len(board_matrix)**0.5)
+    
+    for i in range(len(tiles)):
+        for j in range(i + 1, len(tiles)):
+            val1 = tiles[i]
+            val2 = tiles[j]
+            # Si ambos valores pertenecen a la meta, revisamos su orden
+            if val1 in goal_positions and val2 in goal_positions:
+                if goal_positions[val1] > goal_positions[val2]:
+                    inv_count += 1
+                    
+    # Cada movimiento vertical resuelve a lo sumo algunas inversiones
+    # Dividir el número de inversiones inversas entre (size - 1) es un lower-bound
+    # matemático para la cantidad de movimientos verticales necesarios.
+    return inv_count // (size - 1) if size > 1 else 0
+
 def heuristica_combinada(board_matrix, goal_positions):
     md = h_DistanciaManhattan(board_matrix, goal_positions)
     lc = h_ConflictoLineal(board_matrix, goal_positions)
     wd = h_WalkingDistance(board_matrix, goal_positions)
     ct = h_CornerTiles(board_matrix, goal_positions)
     lm = h_LastMove(board_matrix, goal_positions)
+    idr = h_DistanciaInversion(board_matrix, goal_positions)
     
     # MD y LC son matemática y estructuralmente aditivas (seguras).
-    # CT y LM no se pueden sumar libremente sin riesgo de sobreestimar el costo (romper la admisibilidad del IDA*).
+    # CT, LM, e IDR no se pueden sumar libremente sin riesgo de sobreestimar el costo (romper la admisibilidad del IDA*).
     # WD es un modelo totalmente distinto.
-    # Por lo tanto, extraemos el MÁXIMO de estas tres combinaciones plausibles:
-    return max(md + lc + ct, md + lc + lm, wd)
+    # Por lo tanto, extraemos el MÁXIMO de estas combinaciones admisibles plausibles:
+    return max(md + lc + ct, md + lc + lm, md + idr, wd)

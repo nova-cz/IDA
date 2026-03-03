@@ -22,15 +22,16 @@ La implementación núcleo se encuentra en `src/ida_star.py`. Cumple con todos l
 - **Control de Nivel de Profundidad:** El algoritmo `ida_star()` gestiona el límite mediante la variable `threshold`, la cual dicta hasta dónde puede profundizar el DFS interno, descartando y recordando el mínimo excedente (`min_exceeded`) para la próxima iteración. Asimismo, se integró una cota de seguridad contra estallidos de memoria (`MAX_EXPANS_PER_ITER = 1_000_000`).
 
 ### 3. Función de Evaluación y Heurísticas (2 pts)
-El motor de evaluación heurística, implementado en `src/heuristics.py`, opera con arreglos planos (1D) para multiplicar el rendimiento en Python. La función combinada final $f(n) = g(n) + h(n)$ extrae su valor $h(n)$ empleando **más de 3 componentes avanzados**:
+El motor de evaluación heurística, implementado en `src/heuristics.py`, opera con arreglos planos (1D) para multiplicar el rendimiento en Python. La función combinada final $f(n) = g(n) + h(n)$ extrae su valor $h(n)$ empleando **más de 3 componentes avanzados (6 en total)**:
 1. **Distancia Manhattan (MD):** Distancia geométrica base.
 2. **Conflicto Lineal (LC):** Penalización prioritaria cuando dos piezas de la misma fila/columna están invertidas.
 3. **Distancia Caminando (Walking Distance - WD):** Un modelo de abstracción basado en flujos de filas y columnas.
 4. **Fichas en Esquinas (Corner Tiles - CT):** Penalización si una pieza está atrapada en una esquina adyacente a su lugar correcto, pero la esquina está ocupada por un rival.
 5. **Último Movimiento (Last Move - LM):** Beneficio marginal de reconocimiento cuando solo faltan 2 piezas por acomodar.
+6. **Distancia de Inversión (Inversion Distance - IDR):** Calcula el número de inversiones relativas entre fichas y deriva un estimado matemático de movimientos obligatorios.
 
-> **Definición de Integración (Admisibilidad Matemática):** MD y LC son componentes que por definición pueden sumarse libremente ("additive"). Sin embargo, sumar directamente CT y LM al costo puede sobreestimar el valor real (rompiendo la garantía de encontrar el camino óptimo en el algoritmo IDA*).
-> Para solucionar esto estrictamente, la heurística extrae la información más agresiva utilizando de forma segura el máximo entre las configuraciones probables: `max(md + lc + ct, md + lc + lm, wd)`.
+> **Definición de Integración (Admisibilidad Matemática):** MD y LC son componentes que por definición pueden sumarse libremente ("additive"). Sin embargo, sumar directamente CT, LM e IDR al costo puede sobreestimar el valor real (rompiendo la garantía de encontrar el camino óptimo en el algoritmo IDA*).
+> Para solucionar esto estrictamente, la heurística extrae la información más agresiva utilizando de forma segura el máximo entre las configuraciones probables: `max(md + lc + ct, md + lc + lm, md + idr, wd)`.
 
 ### 4. Implementación en Python (2 pts)
 Todo el sistema está programado en Python 3.
