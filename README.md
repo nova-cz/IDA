@@ -23,13 +23,14 @@ La implementación núcleo se encuentra en `src/ida_star.py`. Cumple con todos l
 
 ### 3. Función de Evaluación y Heurísticas (2 pts)
 El motor de evaluación heurística, implementado en `src/heuristics.py`, opera con arreglos planos (1D) para multiplicar el rendimiento en Python. La función combinada final $f(n) = g(n) + h(n)$ extrae su valor $h(n)$ empleando **más de 3 componentes avanzados**:
-1. **Manhattan Distance (MD):** Distancia geométrica base.
-2. **Linear Conflict (LC):** Penalización prioritaria cuando dos piezas de la misma fila/columna están invertidas.
-3. **Walking Distance (WD):** Un modelo de abstracción basado en flujos de filas y columnas.
-4. **Corner Tiles (CT):** Penalización si una pieza está atrapada en una esquina adyacente a su lugar correcto, pero la esquina está ocupada por un rival.
-5. **Last Move (LM):** Beneficio marginal de reconocimiento cuando solo faltan 2 piezas por acomodar.
+1. **Distancia Manhattan (MD):** Distancia geométrica base.
+2. **Conflicto Lineal (LC):** Penalización prioritaria cuando dos piezas de la misma fila/columna están invertidas.
+3. **Distancia Caminando (Walking Distance - WD):** Un modelo de abstracción basado en flujos de filas y columnas.
+4. **Fichas en Esquinas (Corner Tiles - CT):** Penalización si una pieza está atrapada en una esquina adyacente a su lugar correcto, pero la esquina está ocupada por un rival.
+5. **Último Movimiento (Last Move - LM):** Beneficio marginal de reconocimiento cuando solo faltan 2 piezas por acomodar.
 
-> **Definición de Integración:** La heurística utiliza un modelo restrictivo matemático: `max(md + lc + ct + lm, wd)` para proveer la información más agresiva posible al límite del IDA* sin violar admisibilidad groseramente.
+> **Definición de Integración (Admisibilidad Matemática):** MD y LC son componentes que por definición pueden sumarse libremente ("additive"). Sin embargo, sumar directamente CT y LM al costo puede sobreestimar el valor real (rompiendo la garantía de encontrar el camino óptimo en el algoritmo IDA*).
+> Para solucionar esto estrictamente, la heurística extrae la información más agresiva utilizando de forma segura el máximo entre las configuraciones probables: `max(md + lc + ct, md + lc + lm, wd)`.
 
 ### 4. Implementación en Python (2 pts)
 Todo el sistema está programado en Python 3.
@@ -55,9 +56,11 @@ Para generar y visualizar los resultados exigidos:
 ```bash
 python src/visualizer.py
 ```
-Este script leerá métricas y guardará un archivo `resultados_completos_dashboard.png` provisto en estilos modernos Seaborn/Matplotlib, donde se exponen abiertamente:
-- Aumentos agudos de logaritmo temporal por complejidad de instancias.
-- Estadística explícita de éxito (0% a 100%) vs Memory-Timeouts de protección a causa de la explosión combinatoria.
+Este script leerá métricas y guardará un archivo `resultados_completos_dashboard.png` provisto en estilos modernos Seaborn/Matplotlib en un formato Dashboard (4 Cuadrantes), donde se exponen abiertamente:
+1. **Crecimiento de Tiempo por Dimensión:** Aumentos agudos de logaritmo temporal por complejidad de instancias.
+2. **Costo por Instancia Individual:** Gráfica de dispersión mostrando el tiempo de cada tablero de menor a mayor (más barata a más cara).
+3. **Distribución de Éxito vs Timeout:** Estadística explícita de éxito (0% a 100%) vs cortes de protección de iteraciones IDA* (evitando ciclos infinitos).
+4. **Proporción Global:** Gráfica de pastel global indicando la tasa final de éxito del framework.
 
 ---
 

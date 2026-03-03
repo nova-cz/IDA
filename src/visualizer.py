@@ -42,15 +42,15 @@ def generate_plots():
     count_df = df.groupby(['n_size', 'Estado']).size().reset_index(name='Cantidad')
 
     # Crear Figura principal (Dashboard 2x2)
-    fig = plt.figure(figsize=(18, 14), facecolor='#f7f9fc')
+    fig = plt.figure(figsize=(20, 16), facecolor='#f7f9fc')
     gs = fig.add_gridspec(2, 2, hspace=0.35, wspace=0.25)
     
     # Titulo General
     fig.suptitle("Análisis Empírico de Rendimiento: IDA* Híbrido (N-Puzzle)", 
                  fontsize=24, fontweight='bold', color='#2c3e50', y=0.96)
 
-    # ----- 1. Gráfica de Líneas: Tamaño vs Tiempo (Arriba, abarca ambas columnas) -----
-    ax1 = fig.add_subplot(gs[0, :])
+    # ----- 1. Gráfica de Líneas: Tamaño vs Tiempo (Arriba, Izquierda) -----
+    ax1 = fig.add_subplot(gs[0, 0])
     if not time_df.empty:
         sns.lineplot(
             data=time_df, x='n_size', y='time_seconds', hue='difficulty',
@@ -106,6 +106,31 @@ def generate_plots():
             wedgeprops={'edgecolor': 'white', 'linewidth': 2}
         )
         ax3.set_title("Proporción Global de Resolución del IDA*", fontsize=16, pad=15)
+
+    # ----- 4. Scatter Plot: Distribución de Tiempos Individuales (Arriba, Derecha) -----
+    ax4 = fig.add_subplot(gs[0, 1])
+    if not df_solved.empty:
+        # Ordenar por tiempo para ver la curva de crecimiento de baratos a caros
+        sorted_times = df_solved.sort_values('time_seconds').reset_index(drop=True)
+        
+        sns.scatterplot(
+            data=sorted_times, x=sorted_times.index, y='time_seconds', 
+            hue='difficulty', palette=['#3498db', '#f1c40f', '#e74c3c'], 
+            alpha=0.7, edgecolor=None, s=50, ax=ax4
+        )
+        
+        ax4.set_title("Costo por Instancia Individual (Más barata a más cara)", fontsize=16, pad=15)
+        ax4.set_xlabel("Índice de la Instancia (Ordenada por Tiempo)", fontsize=13)
+        
+        # Escala logarítmica si la disparidad es enorme
+        if sorted_times['time_seconds'].max() / sorted_times['time_seconds'].replace(0, np.nan).min() > 10:
+             ax4.set_yscale("log")
+             ax4.set_ylabel("Tiempo de Resolución (s) [LOG]", fontsize=13)
+        else:
+             ax4.set_ylabel("Tiempo de Resolución (s)", fontsize=13)
+             
+        ax4.legend(title='Dificultad', fontsize='11', loc='upper left')
+        ax4.grid(True, linestyle=':', alpha=0.6)
 
     # Guardar Dashboard Integrado
     dashboard_path = os.path.join(plots_dir, "resultados_completos_dashboard.png")

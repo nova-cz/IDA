@@ -3,7 +3,7 @@ import os
 import time
 from board_manager import Board
 from ida_star import ida_star
-from heuristics import combined_heuristic, get_goal_positions
+from heuristics import heuristica_combinada, get_posiciones_meta
 from utils import read_instance, save_performance_metrics, write_solution
 
 def solve_single_file(filepath):
@@ -17,14 +17,14 @@ def solve_single_file(filepath):
     n, initial_matrix, goal_matrix = read_instance(filepath)
     initial_board = Board(initial_matrix)
     goal_board = Board(goal_matrix)
-    goal_pos = get_goal_positions(goal_matrix)
+    goal_pos = get_posiciones_meta(goal_matrix)
     
     if not initial_board.is_solvable():
         print("El tablero proporcionado no tiene solución (falla de paridad).")
         return
         
     start_time = time.perf_counter()
-    moves_str, nodes, _ = ida_star(initial_board, goal_board, combined_heuristic, goal_pos)
+    moves_str, nodes, _ = ida_star(initial_board, goal_board, heuristica_combinada, goal_pos)
     end_time = time.perf_counter()
     duration = end_time - start_time
     
@@ -67,7 +67,7 @@ def run_empirical_analysis(base_instances_dir, base_results_dir):
                 
                 n_size, init_m, goal_m = read_instance(filepath)
                 initial_board, goal_board = Board(init_m), Board(goal_m)
-                goal_pos = get_goal_positions(goal_m)
+                goal_pos = get_posiciones_meta(goal_m)
                 
                 start_time = time.perf_counter()
                 
@@ -87,7 +87,7 @@ def run_empirical_analysis(base_instances_dir, base_results_dir):
                     continue
                 
                 # Ejecutar IDA*
-                moves_str, nodes, _ = ida_star(initial_board, goal_board, combined_heuristic, goal_pos)
+                moves_str, nodes, _ = ida_star(initial_board, goal_board, heuristica_combinada, goal_pos)
                 end_time = time.perf_counter()
                 duration = end_time - start_time
                 

@@ -3,7 +3,7 @@ Módulo avanzado de heurísticas (Optimizado a índices 1D)
 Multiplica el rendimiento al obviar las matrices 2D.
 """
 
-def get_goal_positions(goal_matrix):
+def get_posiciones_meta(goal_matrix):
     """Retorna posiciones como un único índice plano."""
     pos = {}
     size = len(goal_matrix)
@@ -14,7 +14,7 @@ def get_goal_positions(goal_matrix):
                 pos[val] = r * size + c
     return pos
 
-def h_MD(board_matrix, goal_positions):
+def h_DistanciaManhattan(board_matrix, goal_positions):
     """Distancia Manhattan 1D"""
     dist = 0
     size = int(len(board_matrix)**0.5)
@@ -25,12 +25,12 @@ def h_MD(board_matrix, goal_positions):
             dist += abs(r - gr) + abs(c - gc)
     return dist
 
-def h_LC(board_matrix, goal_positions):
+def h_ConflictoLineal(board_matrix, goal_positions):
     """Conflicto Lineal 1D"""
     conflict = 0
     size = int(len(board_matrix)**0.5)
     
-    # Rows
+    # Filas
     for r in range(size):
         row_tiles = []
         for c in range(size):
@@ -44,7 +44,7 @@ def h_LC(board_matrix, goal_positions):
                 if row_tiles[i][2] > row_tiles[j][2]:
                     conflict += 2
                     
-    # Cols
+    # Columnas
     for c in range(size):
         col_tiles = []
         for r in range(size):
@@ -59,8 +59,8 @@ def h_LC(board_matrix, goal_positions):
                     conflict += 2
     return conflict
 
-def h_WD(board_matrix, goal_positions):
-    """Walking Distance 1D"""
+def h_WalkingDistance(board_matrix, goal_positions):
+    """Distancia Caminando (Walking Distance) 1D"""
     wd_row = 0
     wd_col = 0
     size = int(len(board_matrix)**0.5)
@@ -72,8 +72,8 @@ def h_WD(board_matrix, goal_positions):
             if c != gc: wd_col += 1
     return (wd_row + wd_col) // 2 
 
-def h_CT(board_matrix, goal_positions):
-    """Corner Tiles 1D"""
+def h_CornerTiles(board_matrix, goal_positions):
+    """Fichas en Esquina 1D"""
     penalty = 0
     size = int(len(board_matrix)**0.5)
     
@@ -115,8 +115,8 @@ def h_CT(board_matrix, goal_positions):
                 
     return penalty
 
-def h_LM(board_matrix, goal_positions):
-    """Last Move 1D"""
+def h_LastMove(board_matrix, goal_positions):
+    """Último Movimiento 1D"""
     misplaced = 0
     for i, v in enumerate(board_matrix):
         if v != 0 and v in goal_positions:
@@ -126,10 +126,15 @@ def h_LM(board_matrix, goal_positions):
         return 1
     return 0
 
-def combined_heuristic(board_matrix, goal_positions):
-    md = h_MD(board_matrix, goal_positions)
-    lc = h_LC(board_matrix, goal_positions)
-    wd = h_WD(board_matrix, goal_positions)
-    ct = h_CT(board_matrix, goal_positions)
-    lm = h_LM(board_matrix, goal_positions)
-    return max(md + lc + ct + lm, wd)
+def heuristica_combinada(board_matrix, goal_positions):
+    md = h_DistanciaManhattan(board_matrix, goal_positions)
+    lc = h_ConflictoLineal(board_matrix, goal_positions)
+    wd = h_WalkingDistance(board_matrix, goal_positions)
+    ct = h_CornerTiles(board_matrix, goal_positions)
+    lm = h_LastMove(board_matrix, goal_positions)
+    
+    # MD y LC son matemática y estructuralmente aditivas (seguras).
+    # CT y LM no se pueden sumar libremente sin riesgo de sobreestimar el costo (romper la admisibilidad del IDA*).
+    # WD es un modelo totalmente distinto.
+    # Por lo tanto, extraemos el MÁXIMO de estas tres combinaciones plausibles:
+    return max(md + lc + ct, md + lc + lm, wd)
