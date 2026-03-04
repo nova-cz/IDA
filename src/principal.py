@@ -1,10 +1,10 @@
 import argparse
 import os
 import time
-from board_manager import Board
-from ida_star import ida_star
-from heuristics import heuristica_combinada, get_posiciones_meta
-from utils import read_instance, save_performance_metrics, write_solution
+from gestor_tablero import Board
+from ida_estrella import ida_estrella
+from heuristicas import heuristica_combinada, get_posiciones_meta
+from utilidades import read_instance, save_performance_metrics, write_solution
 
 def solve_single_file(filepath):
     """
@@ -24,7 +24,7 @@ def solve_single_file(filepath):
         return
         
     start_time = time.perf_counter()
-    moves_str, nodes, _ = ida_star(initial_board, goal_board, heuristica_combinada, goal_pos)
+    moves_str, nodes, _ = ida_estrella(initial_board, goal_board, heuristica_combinada, goal_pos)
     end_time = time.perf_counter()
     duration = end_time - start_time
     
@@ -87,7 +87,7 @@ def run_empirical_analysis(base_instances_dir, base_results_dir):
                     continue
                 
                 # Ejecutar IDA*
-                moves_str, nodes, _ = ida_star(initial_board, goal_board, heuristica_combinada, goal_pos)
+                moves_str, nodes, _ = ida_estrella(initial_board, goal_board, heuristica_combinada, goal_pos)
                 end_time = time.perf_counter()
                 duration = end_time - start_time
                 

@@ -53,7 +53,7 @@ def generate_bfs_frontier(initial_board, goal_board, heuristic_func, goal_positi
     return frontier_nodes, transposition_table
 
 
-def ida_star(initial_board, goal_board, heuristic_func, goal_positions):
+def ida_estrella(initial_board, goal_board, heuristic_func, goal_positions):
     """
     Implementación rigurosa de Híbrido BFS-IDA* con tabla de transposición superficial.
     
